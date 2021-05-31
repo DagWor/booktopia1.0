@@ -31,15 +31,18 @@ function BookListController(BookDataFactory, $route, $routeParams) {
     }
 
     vm.nextPage = function () {
-        vm.offset += 10;
+        vm.offset += 5;
         BookDataFactory.getAllBooks(vm.offset, vm.count).then(res => {
+            if (res % 5 !== 0) vm.next = false
             vm.books = res;
-            if (vm.books.length % 5 !== 0) vm.next = false
         })
     }
 
     vm.previousPage = function () {
-        vm.offset -= 10;
-        BookDataFactory.getAllBooks(vm.offset, vm.count).then(res => vm.books = res)
+        vm.offset -= 5;
+        BookDataFactory.getAllBooks(vm.offset, vm.count).then(res => {
+            vm.next = true
+            vm.books = res
+        })
     }
 }

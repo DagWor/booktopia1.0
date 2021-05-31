@@ -60,7 +60,7 @@ module.exports.getAllBooks = (req, res) => {
                     response.message = 'Server Issues'
                 }
                 else if (!books) response.message = 'No books found'
-                else response.message = books.slice(offset, count)
+                else response.message = books
 
                 res.status(response.status).json(response.message)
             })
