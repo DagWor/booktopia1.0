@@ -8,9 +8,9 @@
 <body>
     <div class="container">
         <h1> Books </h1>
-        <select style="width: 35%; margin: auto;" class="form-select" ng-model="vm.search" >
-            <option value="" ng-click="vm.searchBooks('')" selected>Choose Author</option>
-            <option ng-repeat="author in vm.authors" value="{{author}}" ng-click="vm.searchBooks(author)">{{author}}</option>
+        <select ng-init="m=true;" style="width: 35%; margin: auto;" class="form-select" ng-model="vm.search" >
+            <option value="" ng-click="vm.searchBooks(''); m=true" selected>Choose Author</option>
+            <option ng-repeat="author in vm.authors" value="{{author}}" ng-click='vm.searchBooks(author); m=false'>{{author}}</option>
         </select>
         <table class="table">
             <thead>
@@ -29,7 +29,7 @@
         </table>
         <button ng-show="vm.offset > 0"
             ng-click="vm.previousPage()">previous</button>
-        <button ng-show="vm.next;" ng-click="vm.nextPage()">next</button>
+        <button ng-if="vm.next && m" ng-click="vm.nextPage()">next</button>
         <button class="btn btn-secondary" ng-init='update=false; btn=true'
             ng-show="btn" ng-click='update=true; btn=false'>Add</button>
     </div>

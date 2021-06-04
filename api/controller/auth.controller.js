@@ -14,30 +14,18 @@ module.exports.authenticateUser = (req, res) => {
         }
         if (req.body.name) newUser.name = req.body.name
 
-        User.findOne(authUser, (err, user) => {
-            if (err) {
-                response.status = 500
-                response.message = { 'message': "Internal Server Error" }
-            } else if (!user) {
-                response.status = 401
-                response.message = { 'message': 'user not found' }
-            }
-            else {
+        User.findOne(authUser).then(user => {
+            if(user) {
+                
                 if (bcrypt.compareSync(req.body.password, user.password)) {
                     const token = jwt.sign({ username: user.name }, 'cs572', { expiresIn: 3600 })
-                    response.message = {
-                        success: true,
-                        token: token
-                    }
+                    res.status(200).json(token)
                 }
-                else {
-                    response.status = 401
-                    response.message = { "message": 'uauthorized' }
-                }
+                else res.status(401).json({ "message": 'uauthorized' })
             }
+            else res.status(404).json({message: 'User not found'})
+        }).catch(err => res.status(500).json({ 'message': err }))
 
-            res.status(response.status).json(response.message)
-        })
     } else {
         response.status = 400
         response.message = { 'message': 'Username or password requied' }

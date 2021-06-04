@@ -6,12 +6,12 @@ function BookListController(BookDataFactory, $route, $routeParams) {
     vm.next = true;
     if (!$routeParams.offset) vm.offset = 0;
     if (!$routeParams.count) vm.count = 10;
-    BookDataFactory.getAllBooks().then(response => vm.books = response);
-    BookDataFactory.getAllAuthors().then(response => vm.authors = response);
+    BookDataFactory.getAllBooks().then(response => vm.books = response).catch(err => console.log(err));
+    BookDataFactory.getAllAuthors().then(response => vm.authors = response).catch(err => console.log(err));
 
     vm.searchBooks = function (author) {
         if(author == "") $route.reload()
-        else BookDataFactory.getAllBooksByAuthor(author).then(res => vm.books = res)
+        else BookDataFactory.getAllBooksByAuthor(author).then(res => vm.books = res).catch(err => console.log(err));
     }
     vm.addBook = function () {
         const newBook = {
@@ -27,7 +27,7 @@ function BookListController(BookDataFactory, $route, $routeParams) {
         BookDataFactory.addOneBook(newBook).then(() => {
             console.log("success")
             $route.reload()
-        })
+        }).catch(err => console.log(err));
     }
 
     vm.nextPage = function () {
@@ -35,7 +35,7 @@ function BookListController(BookDataFactory, $route, $routeParams) {
         BookDataFactory.getAllBooks(vm.offset, vm.count).then(res => {
             if (res % 5 !== 0) vm.next = false
             vm.books = res;
-        })
+        }).catch(err => console.log(err));
     }
 
     vm.previousPage = function () {
@@ -43,6 +43,6 @@ function BookListController(BookDataFactory, $route, $routeParams) {
         BookDataFactory.getAllBooks(vm.offset, vm.count).then(res => {
             vm.next = true
             vm.books = res
-        })
+        }).catch(err => console.log(err));
     }
 }

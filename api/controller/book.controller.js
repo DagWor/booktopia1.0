@@ -41,49 +41,30 @@ module.exports.getAllBooks = (req, res) => {
 
     else {
         if (req.query.author && req.query.author !== "") {
-            Book.find({ author: req.query.author }).exec((err, books) => {
-
-                if (err) {
-                    response.status = 500
-                    response.message = 'Server Issues'
-                }
-                else if (!books) response.message = 'No books found'
-                else response.message = books.slice(offset, count)
-
-                res.status(response.status).json(response.message)
-            })
+            Book.find({ author: req.query.author })
+                .then(books => {
+                    if (book) res.status(200).json(book)
+                    else res.status(404).json({ 'message': 'book not found' })
+                })
+                .catch(err => res.status(500).json({ message: err }))
         } else {
-            Book.find().skip(offset).limit(count).exec((err, books) => {
-
-                if (err) {
-                    response.status = 500
-                    response.message = 'Server Issues'
-                }
-                else if (!books) response.message = 'No books found'
-                else response.message = books
-
-                res.status(response.status).json(response.message)
-            })
+            Book.find().skip(offset).limit(count)
+                .then(books => {
+                    if (books) res.status(200).json(books)
+                    else res.status(404).json({ 'message': 'books not found' })
+                })
+                .catch(err => res.status(500).json({ message: err }))
         }
     }
 }
 
 module.exports.getBookById = (req, res) => {
-    const response = {
-        status: 200,
-        message: ""
-    }
-
-    Book.findById(req.params.id).exec((err, book) => {
-        if (err) {
-            response.status = 500
-            response.message = 'Invalid ID provided'
-        } else if (!book) {
-            response.status = 404
-            response.message = 'Book not found'
-        } else if (book) response.message = book
-        res.status(response.status).json(response.message)
-    })
+    Book.findById(req.params.id)
+        .then(book => {
+            if (book) res.status(200).json(book)
+            else res.status(404).json({ 'message': 'book not found' })
+        })
+        .catch(err => res.status(500).json({ 'message': err }))
 }
 
 module.exports.addOneBook = (req, res) => {
@@ -91,24 +72,20 @@ module.exports.addOneBook = (req, res) => {
         status: 201,
         message: ""
     }
-    console.log(req.body);
     if (req.body && req.body.title && req.body.year && req.body.edition && req.body.author && req.body.price && req.body.rating) {
-        const newBook = {};
+        const newBook = new Book;
         newBook.title = req.body.title
-        newBook.year = `${new Date(req.body.year).getFullYear()}`
+        newBook.year = req.body.year
         newBook.edition = parseInt(req.body.edition);
         newBook.author = req.body.author;
         newBook.price = parseFloat(req.body.price);
         newBook.rating = parseInt(req.body.rating)
 
-        Book.create(newBook, (err, book) => {
-            if (err) {
-                response.status = 500;
-                response.message = err
-            } else response.message = book
-
-            res.status(response.status).json(response.message);
-        })
+        newBook.save()
+            .then(book => {
+                res.status(201).json(book)
+            })
+            .catch(err => res.status(500).json({ 'message': err }))
     } else {
         response.status = 400;
         response.message = 'Insufficient information'
@@ -119,53 +96,33 @@ module.exports.addOneBook = (req, res) => {
 
 module.exports.updateOneBook = (req, res) => {
     if (req.params.id) {
-        Book.findOneAndReplace({_id: req.params.id}, req.body).exec((err, book) => {
-            if (err) {
-                response.status = 500
-                response.message = 'Invalid ID provided'
-            } else if (!book) {
-                response.status = 404
-                response.message = 'Book not found'
-            } else if (book) response.message = book
-            res.status(response.status).json(response.message)
-        })
+        Book.findOneAndReplace({ _id: req.params.id }, req.body)
+            .then(book => {
+                if (book) res.status(201).json(book)
+                else res.status(404).json({ 'message': 'book not found' })
+            })
+            .catch(err => res.status(500).json({ 'message': err }))
     }
 }
 
 module.exports.patchOneBook = (req, res) => {
     if (req.params.id) {
-        Book.findByIdAndUpdate(req.params.id, req.body).exec((err, book) => {
-            if (err) {
-                response.status = 500
-                response.message = 'Invalid ID provided'
-            } else if (!book) {
-                response.status = 404
-                response.message = 'Book not found'
-            } else if (book) response.message = book
-            res.status(response.status).json(response.message)
-        })
+        Book.findByIdAndUpdate(req.params.id, req.body)
+            .then(book => {
+                if (book) res.status(202).json(book)
+                else res.status(404).json({ 'message': 'book not found' })
+            })
+            .catch(err => res.status(500).json({ 'message': err }))
     }
 }
 
-
 module.exports.deleteOneBook = (req, res) => {
-    Book.findByIdAndDelete(req.params.id, (err, book) => {
-        let response = {
-            status: 204,
-            message: ""
-        }
-        if (err) {
-            response.status = 500
-            response.message = "Internal Server Error"
-        } else if (!book) {
-            response.status = 404
-            response.message = "book not found in database"
-        } else {
-            response.status = 204
-            response.message = "book Deleted Successfully"
-        }
-
-        res.status(response.status).json({ 'message': response.message })
-    })
+    Book.findByIdAndDelete(req.params.id)
+        .then(book => {
+            if (book) {
+                res.status(204).json(book)
+            } else res.status(400).json({ 'message': 'book not found' })
+        })
+        .catch(err => console.log(err))
 
 }

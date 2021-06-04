@@ -27,18 +27,11 @@ module.exports.getAllReviews = (req, res) => {
 
     if (response.status !== 200) res.status(response.status).json(response.message)
     else {
-        Book.findById(req.params.id).exec((err, book) => {
-
-            if (err) {
-                response.status = 500
-                response.message = 'Server Issues'
-            }
-            else if (!book) response.message = 'No book found'
-            else if (!book.reviews && book.reviews.length == 0) response.message = 'No reviews found'
-            else response.message = book.reviews.slice(offset, count)
-
-            res.status(200).json(response.message)
+        Book.findById(req.params.id).then(book => {
+            if (book) res.status(202).json(book)
+            else res.status(404).json({ 'message': 'book not found' })
         })
+        .catch(err => res.status(500).json({ 'message': err }))
     }
 }
 
